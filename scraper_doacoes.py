@@ -556,7 +556,7 @@ def acha_cnpjs():
 
     #agora compara com os que temos no arquivo armazenado
     path = os.path.dirname(os.path.abspath(__file__))
-    dados = read_csv(path+"/cnpjs.csv")
+    dados = read_csv(path+"/doacoes_burga_limas.csv")
     cnpjs2 = set(list(dados["cnpj"]))
     
     #cnpjs que faltam
@@ -568,23 +568,19 @@ def acha_cnpjs():
     saida["doador"] = saida["cnpj"].apply(lambda t:traducao[t])
     
     #escreve
-    saida.to_csv(path+"/cnpjs.csv",index=False)
+    saida.to_csv(path+"/cnpjs_faltam.csv",index=False)
 
 def totaliza_doacoes():
     path = os.path.dirname(os.path.abspath(__file__))
     dados = read_csv(path+"/doacoes_burga_limas.csv")
     dados["pf_pj"] = dados["cnpj"].apply(lambda t:"pj" if "/" in t else "pf")
-    dados = dados[dados.pf_pj == "pf"]
     dados["valor"] = dados["valor"].apply(lambda t:float(t.replace(",",".")))
-    doadores = ['004.456.896-76', '064.842.538-03', '237.227.621-20', '098.647.840-72', '098.675.970-87', '570.405.408-00', '335.117.059-91', '598.025.969-49', '071.823.766-87', '571.780.202-10']
-    dados = dados[dados.cnpj.isin(doadores)]
-    for c in dados.columns:
-        if c not in ["doador", "cnpj","partido","valor","cargo","receptor","uf"]:
-            del dados[c]
-    
-    tabela = pivot_table(dados, values="valor",index=["doador","partido","cargo","receptor","uf"], aggfunc=np.sum)
+    empresas = ["JBS S/A","CONSTRUTORA OAS SA","CONSTRUTORA ANDRADE GUTIERREZ  S.A.","U T C ENGENHARIA S/A","CRBS S.A.","CONSTRUTORA QUEIROZ GALVAO S.A","CONSTRUTORA NORBERTO ODEBRECHT S/A","COSAN LUBRIFICANTES E ESPECIALIDADES S.A.","ARCELORMITTAL BRASIL S/A"]
+    dados = dados[dados.doador.isin(empresas)]
+    tabela = pivot_table(dados, values="valor",index=["doador","partido"], aggfunc=np.sum)
     tabela.to_csv(path+"/tabela.csv")
     print(tabela)
+    print(sum(tabela))
     
 #checa_despesas()
 #print(faz_consulta("despesa_candidatos"))
